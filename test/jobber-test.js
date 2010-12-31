@@ -4,15 +4,16 @@
  * (C) 2010 Charlie Robbins
  *
  */
+
+require.paths.unshift(require('path').join(__dirname, '..', 'lib'));
   
 var sys = require('sys'),
     fs = require('fs'),
     vows = require('vows'),
-    assert = require('assert');
-
-require.paths.unshift(require('path').join(__dirname, '..', 'lib'));
-
-var jobber = require('jobber'), testJob;
+    assert = require('assert'),
+    jobber = require('jobber');
+    
+var testJob;
 
 vows.describe('jobber').addBatch({
   "When using an instance of the JobManager": {
