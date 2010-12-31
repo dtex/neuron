@@ -1,0 +1,17 @@
+{
+  "name": "jobber",
+  "description": "A simple CLI tool for ensuring that a given node script runs continuously (i.e. forever)",
+  "version": "0.1.0",
+  "author": "Charlie Robbins <charlie.robbins@gmail.com>",
+  "repository": {
+      "type": "git",
+      "url": "http://github.com/indexzero/jobber.git" 
+  },
+  "keywords": ["job queue", "tools"],
+  "dependencies": {
+    "vows": ">= 0.5.2"
+  },
+  "main": "./lib/jobber",
+  "scripts": { "test": "vows test/*-test.js --spec" },
+  "engines": { "node": ">= 0.3.0" }
+}
