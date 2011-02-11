@@ -1,6 +1,6 @@
 # Jobber
 
-The simplest possible event driven job manager in node.js
+The simplest possible event driven job manager / FIFO queue in node.js
 
 ## Installation
 
@@ -15,40 +15,58 @@ The simplest possible event driven job manager in node.js
 </pre>
 
 ## Usage 
-Jobber is not a "job queue" (not yet anyway). It is simply a way to manage jobs as they are created and completed. Heuristics for parallelization, ordering, and pooling are left to the programmer. These features may be added in the future, but for now they are not included.
+Jobber is not a simple job queue with support for a dynamic level of concurrency. It a way to manage jobs as they are created and completed in an async, event-driven manner. Heuristics for parallelization, ordering, and pooling are simple right now and jobs are processed in a FIFO order. 
+
+More features may be added in the future, so keep me posted on how you use it.
 
 ### Creating Jobs
-Creating jobs in jobber is easy. Jobber doesn't assume anything about the internal structure of the properties for each of your jobs. Here's a quick sample of creating a job:
+Creating jobs in jobber is easy. Jobber doesn't assume anything about the internal structure of the properties for each of your jobs except that they have a function called `work()`. Each JobManager is designed to process one instance of a Job, creating many workers which may be added by calling the `start()` method.
+
+Here's a quick sample of creating a manager and adding a job.
 
 <pre>
-  var jobber = require('jobber'),
+  var util = require('util'),
+      jobber = require('jobber'),
       manager = new jobber.JobManager();
       
-  var job = manager.addJob({ results: [] });
-</pre>
+  //
+  // Create the manager and set the job.
+  //
+  var manager = new jobber.JobManager({ concurrency: 100 });
+  manager.setJob(new jobber.Job('listDir', {
+    dirname: __dirname,
+    work: function (dirname) {
+      var self = this;
+      exec('ls -la ' + dirname || this.dirname, function (error, stdout, stderr) {
+        if (error) self.error = error;
+        else self.stdout = stdout;
 
-### Working with Jobs
-Once we have created a job, we can flexibly set properties on it and pass it around to any data transform or operation.
-<pre>
-  var remoteResults = someRemote.operation();
-  remoteResults.forEach(function (result) {
-    //
-    // Perform some async operation on the result
-    //
-    job.results.push(result);
-  });
+        //
+        // Finish the job, this will notify the manager.
+        //
+        self.finished = true;
+      });
+    }
+  }));
 </pre>
 
 ### Completing Jobs
-A job raises the finished event once the finished property is set to true:
+An instance of `jobber.JobManager` raises the `finish` event every time a worker has set `finished = true`:
 <pre>
-  jobManager.on('finished', function (job) {
+  //
+  // Start a worker and listen for finish
+  //
+  manager.on('finish', function (worker) {
     //
-    // Do something with the now finished job.
+    // Log the result from the worker (the directory listing for '/')
     //
+    console.dir(worker.stdout);
   });
   
-  job.finished = true;
+  //
+  // All arguments passed to the start() function are consumed by the worker
+  //
+  manager.start('/');
 </pre>
 
 #### Author: [Charlie Robbins](http://www.charlierobbins.com)
