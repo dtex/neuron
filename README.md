@@ -19,8 +19,8 @@ Jobber is not a simple job queue with support for a dynamic level of concurrency
 
 More features may be added in the future, so keep me posted on how you use it.
 
-### Creating Jobs
-Creating jobs in jobber is easy. Jobber doesn't assume anything about the internal structure of the properties for each of your jobs except that they have a function called `work()`. Each JobManager is designed to process one instance of a Job, creating many workers which may be added by calling the `start()` method.
+### Managing Jobs
+Managing jobs in jobber is easy. Jobber doesn't assume anything about the internal structure of the properties for each of your jobs except that they have a function called `work()`. Each JobManager is designed to process one instance of a Job.
 
 Here's a quick sample of creating a manager and adding a job.
 
@@ -50,8 +50,10 @@ Here's a quick sample of creating a manager and adding a job.
   }));
 </pre>
 
-### Completing Jobs
-An instance of `jobber.JobManager` raises the `finish` event every time a worker has set `finished = true`:
+### Working with and Finishing Job instances
+A JobManager will create a worker for the Job associated with it (i.e. add it to the job queue) each time the `start()` method is called. All parameters passed to the start method are passed on to the Job `work()` function. 
+
+A Job function is 'finished' when it sets `this.finished = true`. This raises an event which is handled by the manager and re-emitted for the programmer. So when a worker completes, the JobManager raises the `finish` event:
 <pre>
   //
   // Start a worker and listen for finish
