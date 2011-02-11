@@ -58,7 +58,7 @@ vows.describe('jobber/job-manager/simple').addBatch(
 ).addBatch(
   createConcurrentBatch("and all of those jobs are complete", {
     topic: function (manager) {
-      manager.on('empty', this.callback.bind(null, null, manager));
+      manager.once('empty', this.callback.bind(null, null, manager));
     },
     "should eventually fire the 'empty' event": function (manager) {
       assert.equal(manager.queue.length, 0);
