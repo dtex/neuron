@@ -1,7 +1,7 @@
 {
   "name": "jobber",
   "description": "The simplest possible event driven job manager / FIFO queue in node.js",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Charlie Robbins <charlie.robbins@gmail.com>",
   "repository": {
       "type": "git",
