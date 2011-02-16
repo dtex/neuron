@@ -1,5 +1,5 @@
 /*
- * jobber-test.js: Tests unit tests for jobber module
+ * neuron-test.js: Tests unit tests for neuron module
  *
  * (C) 2010 Charlie Robbins
  *
@@ -13,7 +13,7 @@ var sys = require('sys'),
     eyes = require('eyes'),
     vows = require('vows'),
     assert = require('assert'),
-    jobber = require('jobber'),
+    neuron = require('neuron'),
     helpers = require('./helpers');
     
 var workerIds = [];
@@ -22,8 +22,8 @@ function createConcurrentBatch (message, nestedTest, timeout) {
   var batch = {
     "When using an instance of the JobManager": {
       topic: function () {
-        var manager = new jobber.JobManager({ concurrency: 10 });
-        manager.setJob(new jobber.Job('listDir', {
+        var manager = new neuron.JobManager({ concurrency: 10 });
+        manager.setJob(new neuron.Job('listDir', {
           dirname: __dirname,
           work: helpers.listDir(timeout || 3000)
         }));
@@ -50,7 +50,7 @@ function createConcurrentBatch (message, nestedTest, timeout) {
   return batch;
 }
 
-vows.describe('jobber/job-manager/simple').addBatch(
+vows.describe('neuron/job-manager/simple').addBatch(
   createConcurrentBatch("should have the correct number running and waiting", function (manager) {
     assert.equal(manager.queue.length, 15);
     assert.equal(Object.keys(manager.running).length, 10);

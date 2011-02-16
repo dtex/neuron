@@ -1,5 +1,5 @@
 /*
- * jobber-test.js: Tests unit tests for jobber module
+ * neuron-test.js: Tests unit tests for neuron module
  *
  * (C) 2010 Charlie Robbins
  *
@@ -13,16 +13,16 @@ var sys = require('sys'),
     eyes = require('eyes'),
     vows = require('vows'),
     assert = require('assert'),
-    jobber = require('jobber'),
+    neuron = require('neuron'),
     helpers = require('./helpers');
     
 var workerId;
 
-vows.describe('jobber/job-manager/simple').addBatch({
+vows.describe('neuron/job-manager/simple').addBatch({
   "When using an instance of the JobManager": {
     topic: function () {
-      var manager = new jobber.JobManager();
-      manager.setJob(new jobber.Job('listDir', {
+      var manager = new neuron.JobManager();
+      manager.setJob(new neuron.Job('listDir', {
         dirname: __dirname,
         work: helpers.listDir(100)
       }));
@@ -60,7 +60,7 @@ vows.describe('jobber/job-manager/simple').addBatch({
 }).addBatch({
   "When using an instance of the JobManager": {
     topic: function () {
-      var manager = new jobber.JobManager();
+      var manager = new neuron.JobManager();
       return manager;
     },
     "the start() method with no job should throw an error": function (manager) {
@@ -71,7 +71,7 @@ vows.describe('jobber/job-manager/simple').addBatch({
         assert.throws(function () { manager.setJob('foo') });
         manager.queue.unshift('foo');
         assert.throws(function () {
-          manager.setJob(new jobber.Job('listDir', {
+          manager.setJob(new neuron.Job('listDir', {
             dirname: __dirname,
             work: helpers.listDir(100)
           }));

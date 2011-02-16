@@ -1,5 +1,5 @@
 /*
- * jobber-test.js: Tests unit tests for jobber module
+ * neuron-test.js: Tests unit tests for neuron module
  *
  * (C) 2010 Charlie Robbins
  *
@@ -13,26 +13,26 @@ var sys = require('sys'),
     eyes = require('eyes'),
     vows = require('vows'),
     assert = require('assert'),
-    jobber = require('jobber'),
+    neuron = require('neuron'),
     helpers = require('./helpers');
 
-vows.describe('jobber/job').addBatch({
+vows.describe('neuron/job').addBatch({
   "When using an instance of a Job": {
     "when passed invalid parameters": {
       "should throw an error": function () {
         // No params
         assert.throws(function () {
-          var j = new jobber.Job();
+          var j = new neuron.Job();
         });
         
         // No work
         assert.throws(function () {
-          var j = new jobber.Worker('someId');
+          var j = new neuron.Worker('someId');
         });
         
         // Pass finished
         assert.throws(function () {
-          var j = new jobber.Worker('someId', {
+          var j = new neuron.Worker('someId', {
             work: function () { /* Purposefully Empty */ },
             finished: false
           });
@@ -41,7 +41,7 @@ vows.describe('jobber/job').addBatch({
     },
     "when passed valid parameters": {
       topic: function () {
-        var job = new jobber.Job('testJob', {
+        var job = new neuron.Job('testJob', {
           work: function () { /* Purposefully empty */ },
           someProp: true,
           someObj: {

@@ -1,5 +1,5 @@
 /*
- * helpers.js: Helpers for the jobber tests
+ * helpers.js: Helpers for the neuron tests
  *
  * (C) 2010 Charlie Robbins
  *

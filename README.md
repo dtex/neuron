@@ -1,6 +1,6 @@
-# Jobber
+# Neuron
 
-The simplest possible event driven job manager / FIFO queue in node.js
+The simplest possible event driven job manager, FIFO queue, and "task based cache" in node.js
 
 ## Installation
 
@@ -11,29 +11,29 @@ The simplest possible event driven job manager / FIFO queue in node.js
 
 ### Installing forever
 <pre>
-  [sudo] npm install jobber
+  [sudo] npm install neuron
 </pre>
 
 ## Usage 
-Jobber is not a simple job queue with support for a dynamic level of concurrency. It a way to manage jobs as they are created and completed in an async, event-driven manner. Heuristics for parallelization, ordering, and pooling are simple right now and jobs are processed in a FIFO order. 
+Neuron is not a simple job queue with support for a dynamic level of concurrency. It a way to manage jobs as they are created and completed in an async, event-driven manner. Heuristics for parallelization, ordering, and pooling are simple right now and jobs are processed in a FIFO order. 
 
 More features may be added in the future, so keep me posted on how you use it.
 
 ### Managing Jobs
-Managing jobs in jobber is easy. Jobber doesn't assume anything about the internal structure of the properties for each of your jobs except that they have a function called `work()`. Each JobManager is designed to process one instance of a Job.
+Managing jobs in neuron is easy. Neuron doesn't assume anything about the internal structure of the properties for each of your jobs except that they have a function called `work()`. Each JobManager is designed to process one instance of a Job.
 
 Here's a quick sample of creating a manager and adding a job.
 
 <pre>
   var util = require('util'),
-      jobber = require('jobber'),
-      manager = new jobber.JobManager();
+      neuron = require('neuron'),
+      manager = new neuron.JobManager();
       
   //
   // Create the manager and set the job.
   //
-  var manager = new jobber.JobManager({ concurrency: 100 });
-  manager.setJob(new jobber.Job('listDir', {
+  var manager = new neuron.JobManager({ concurrency: 100 });
+  manager.setJob(new neuron.Job('listDir', {
     dirname: __dirname,
     work: function (dirname) {
       var self = this;

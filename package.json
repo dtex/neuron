@@ -1,17 +1,17 @@
 {
-  "name": "jobber",
-  "description": "The simplest possible event driven job manager / FIFO queue in node.js",
+  "name": "neuron",
+  "description": "The simplest possible event driven job manager, FIFO queue, and 'task based cache' in node.js",
   "version": "0.2.1",
   "author": "Charlie Robbins <charlie.robbins@gmail.com>",
   "repository": {
       "type": "git",
-      "url": "http://github.com/indexzero/jobber.git" 
+      "url": "http://github.com/indexzero/neuron.git" 
   },
-  "keywords": ["job queue", "tools"],
+  "keywords": ["job queue", "tools", "cache"],
   "dependencies": {
     "vows": ">= 0.5.2"
   },
-  "main": "./lib/jobber",
+  "main": "./lib/neuron",
   "scripts": { "test": "vows test/*-test.js --spec" },
   "engines": { "node": ">= 0.4.0" }
 }
