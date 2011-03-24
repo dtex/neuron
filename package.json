@@ -1,7 +1,7 @@
 {
   "name": "neuron",
   "description": "The simplest possible event driven job manager, FIFO queue, and 'task based cache' in node.js",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "author": "Charlie Robbins <charlie.robbins@gmail.com>",
   "repository": {
       "type": "git",

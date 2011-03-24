@@ -72,4 +72,4 @@ A Job function is 'finished' when it sets `this.finished = true`. This raises an
   manager.enqueue('listDir', '/');
 </pre>
 
-#### Author: [Charlie Robbins](http://www.charlierobbins.com)
+#### Author: [Charlie Robbins](http://nodejitsu.com)
