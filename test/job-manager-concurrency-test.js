@@ -18,15 +18,26 @@ var sys = require('sys'),
     
 var workerIds = [];
 
-function createConcurrentBatch (message, nestedTest, timeout) {
+var listProps = {
+  dirname: __dirname,
+  work: helpers.listDir(3000)
+};
+
+var fastListProps = {
+  dirname: __dirname,
+  work: helpers.listDir(100)
+};
+
+var waitProps = {
+  work: helpers.waitAndRespond('testing', 30000)
+};
+
+function createConcurrentBatch (message, name, props, nestedTest) {
   var batch = {
     "When using an instance of the JobManager": {
       topic: function () {
         var manager = new neuron.JobManager({ concurrency: 10 });
-        manager.setJob(new neuron.Job('listDir', {
-          dirname: __dirname,
-          work: helpers.listDir(timeout || 3000)
-        }));
+        manager.addJob(name, props);
 
         return manager;
       }
@@ -38,7 +49,7 @@ function createConcurrentBatch (message, nestedTest, timeout) {
     topic: function (manager) {
       var that = this;
       for (var i = 0; i < 25; i++) {
-        workerIds.push(manager.start(path.join(__dirname, '..')));
+        workerIds.push(manager.enqueue(name, path.join(__dirname, '..')));
       }
       return manager;
     }
@@ -51,17 +62,30 @@ function createConcurrentBatch (message, nestedTest, timeout) {
 }
 
 vows.describe('neuron/job-manager/simple').addBatch(
-  createConcurrentBatch("should have the correct number running and waiting", function (manager) {
-    assert.equal(manager.queue.length, 15);
-    assert.equal(Object.keys(manager.running).length, 10);
+  createConcurrentBatch("should have the correct number running and waiting", 'listDir', listProps, function (manager) {
+    assert.equal(manager.jobs['listDir'].queue.length, 15);
+    assert.equal(Object.keys(manager.jobs['listDir'].running).length, 10);
   })
 ).addBatch(
-  createConcurrentBatch("and all of those jobs are complete", {
+  createConcurrentBatch("and all of those jobs are complete", 'listDir', fastListProps, {
     topic: function (manager) {
       manager.once('empty', this.callback.bind(null, null, manager));
     },
     "should eventually fire the 'empty' event": function (manager) {
-      assert.equal(manager.queue.length, 0);
+      assert.equal(manager.jobs['listDir'].queue.length, 0);
     }
-  }, 100)
+  })
+).addBatch(
+  createConcurrentBatch("and the remove() method is called", 'waitRespond', waitProps, {
+    topic: function (manager) {
+      Object.keys(manager.jobs['waitRespond'].waiting).forEach(function (id) {
+        manager.remove('waitRespond', id);
+      });
+
+      return manager;
+    },
+    "should remove the specified jobs": function (manager) {
+      assert.equal(manager.jobs['waitRespond'].queue.length, 0);
+    }
+  }, 30000)
 ).export(module);

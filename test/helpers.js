@@ -22,3 +22,13 @@ helpers.listDir = function (timeout) {
     }, timeout);
   }
 };
+
+helpers.waitAndRespond = function (timeout) {
+  return function (value) {
+    var self = this;
+    setTimeout(function () {
+      self.data = value;
+      self.finished = true;
+    }, timeout);
+  }
+};

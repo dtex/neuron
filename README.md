@@ -33,7 +33,7 @@ Here's a quick sample of creating a manager and adding a job.
   // Create the manager and set the job.
   //
   var manager = new neuron.JobManager({ concurrency: 100 });
-  manager.setJob(new neuron.Job('listDir', {
+  manager.addJob('listDir', {
     dirname: __dirname,
     work: function (dirname) {
       var self = this;
@@ -47,18 +47,18 @@ Here's a quick sample of creating a manager and adding a job.
         self.finished = true;
       });
     }
-  }));
+  });
 </pre>
 
 ### Working with and Finishing Job instances
-A JobManager will create a worker for the Job associated with it (i.e. add it to the job queue) each time the `start()` method is called. All parameters passed to the start method are passed on to the Job `work()` function. 
+A JobManager will create a worker for the specified Job associated (i.e. add it to the job queue) each time the `enqueue()` method is called. All parameters passed to the enqueue method are passed on to the Job `work()` function. 
 
 A Job function is 'finished' when it sets `this.finished = true`. This raises an event which is handled by the manager and re-emitted for the programmer. So when a worker completes, the JobManager raises the `finish` event:
 <pre>
   //
   // Start a worker and listen for finish
   //
-  manager.on('finish', function (worker) {
+  manager.on('finish', function (job, worker) {
     //
     // Log the result from the worker (the directory listing for '/')
     //
@@ -66,9 +66,10 @@ A Job function is 'finished' when it sets `this.finished = true`. This raises an
   });
   
   //
-  // All arguments passed to the start() function are consumed by the worker
+  // All arguments passed to the enqueue() function after the job name
+  // are consumed by the work() function passed to the job.
   //
-  manager.start('/');
+  manager.enqueue('listDir', '/');
 </pre>
 
 #### Author: [Charlie Robbins](http://www.charlierobbins.com)

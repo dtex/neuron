@@ -22,22 +22,24 @@ vows.describe('neuron/job-manager/simple').addBatch({
   "When using an instance of the JobManager": {
     topic: function () {
       var manager = new neuron.JobManager();
-      manager.setJob(new neuron.Job('listDir', {
+      manager.addJob('listDir', {
         dirname: __dirname,
         work: helpers.listDir(100)
-      }));
+      });
       
       return manager;
     },
-    "the start() method": {
+    "the enqueue() method": {
       topic: function (manager) {
         var that = this;
         
-        manager.once('finish', function (worker) {
-          that.callback(null, worker, workerId)
+        manager.once('start', function () {
+          manager.once('finish', function (job, worker) {
+            that.callback(null, worker, workerId)
+          });
         });
         
-        workerId = manager.start(path.join(__dirname, '..'));
+        workerId = manager.enqueue('listDir', path.join(__dirname, '..'));
       },
       "should start off a job that returns results": function (err, worker, workerId) {
         assert.isNotNull(worker);
@@ -49,7 +51,7 @@ vows.describe('neuron/job-manager/simple').addBatch({
     },
     "the getWorker() method": {
       "should return a valid worker": function (manager) {
-        var worker = manager.getWorker(workerId);
+        var worker = manager.getWorker('listDir', workerId);
         assert.isNotNull(worker);
         assert.equal(worker.id, workerId);
         assert.equal(worker.finished, false);
@@ -63,18 +65,21 @@ vows.describe('neuron/job-manager/simple').addBatch({
       var manager = new neuron.JobManager();
       return manager;
     },
-    "the start() method with no job should throw an error": function (manager) {
-      assert.throws(function () { manager.start(__dirname) });
+    "the enqueue() method with a job name that doesnt exist should throw an error": function (manager) {
+      assert.throws(function () { manager.enqueue('listDir', __dirname) });
     },
-    "the setJob() method": {
+    "the addJob() method": {
       "when passed invalid parameters should throw an error": function (manager) {
-        assert.throws(function () { manager.setJob('foo') });
-        manager.queue.unshift('foo');
+        assert.throws(function () { manager.addJob('foo') });
         assert.throws(function () {
-          manager.setJob(new neuron.Job('listDir', {
+          manager.addJob('listDir', {
             dirname: __dirname,
             work: helpers.listDir(100)
-          }));
+          });
+          manager.addJob('listDir', {
+            dirname: __dirname,
+            work: helpers.listDir(100)
+          });
         });
       }
     }

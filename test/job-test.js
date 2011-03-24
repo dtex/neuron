@@ -52,7 +52,7 @@ vows.describe('neuron/job').addBatch({
         return job;
       },
       "should copy the properties to the instance": function (job) {
-        assert.equal(job.jobName, 'testJob');
+        assert.equal(job.name, 'testJob');
         assert.equal(job.someProp, true);
         assert.isObject(job.someObj);
         assert.isString(job.someObj.aparam);
