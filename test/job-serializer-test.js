@@ -56,6 +56,32 @@ vows.describe('vows/job-serializer').addBatch({
         assert.isFunction(obj.fn);
         assert.equal(obj.fn(1,2), 3);
       }
+    },
+    "when serializing complex functions": {
+      "it should serialize / deserialize correctly": function () {
+        var strd = neuron.stringify({
+          fn1: function (a, b /* some comments */) {
+            var c = 1;
+            function complex() {
+              return a + b + c;
+            }
+            
+            return complex() + c;
+          },
+          fn2: function (/* variable arguments */) {
+            var args = Array.prototype.slice.call(arguments), foo = 0;
+            args.forEach(function (a) {
+              foo += a;
+            });
+            
+            return foo;
+          }
+        });
+        
+        var objd = neuron.parse(strd);
+        assert.equal(objd.fn1(1, 2), 5);
+        assert.equal(objd.fn2(1, 2, 3, 4, 5), 15);
+      }
     }
   }
 }).export(module);
