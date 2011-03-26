@@ -1,0 +1,181 @@
+<!DOCTYPE html>  <html> <head>   <title>worker-cache.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="../docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="..//neuron/job-manager.html">                 neuron/job-manager.html               </a>                                           <a class="source" href="..//neuron/job.html">                 neuron/job.html               </a>                                           <a class="source" href="..//neuron/worker-cache.html">                 neuron/worker-cache.html               </a>                                           <a class="source" href="..//neuron/worker.html">                 neuron/worker.html               </a>                                           <a class="source" href="..//neuron.html">                 neuron.html               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               worker-cache.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="cm">/*</span>
+<span class="cm"> * worker-cache.js: Persists a specified job to Redis for single instance durability.</span>
+<span class="cm"> *</span>
+<span class="cm"> * (C) 2010 Charlie Robbins</span>
+<span class="cm"> * MIT LICENSE</span>
+<span class="cm"> *</span>
+<span class="cm"> */</span>
+ 
+<span class="kd">var</span> <span class="nx">util</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;util&#39;</span><span class="p">),</span>
+    <span class="nx">events</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;events&#39;</span><span class="p">),</span>
+    <span class="nx">async</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;async&#39;</span><span class="p">),</span>
+    <span class="nx">redis</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;redis&#39;</span><span class="p">),</span>
+    <span class="nx">neuron</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;neuron&#39;</span><span class="p">);</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <h3>function WorkerCache (options)</h3>
+
+<h4>@options {Object} Options to use for this instance.</h4>
+
+<p>Constructor function for the WorkerCache object. Caches worker 
+information in a remote Redis server. </p>             </td>             <td class="code">               <div class="highlight"><pre><span class="kd">var</span> <span class="nx">WorkerCache</span> <span class="o">=</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">WorkerCache</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">options</span> <span class="o">=</span> <span class="k">typeof</span> <span class="nx">options</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span> <span class="o">?</span> <span class="nx">options</span> <span class="o">:</span> <span class="p">{};</span>
+  
+  <span class="k">this</span><span class="p">.</span><span class="nx">namespace</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">namespace</span> <span class="o">||</span> <span class="s1">&#39;neuron&#39;</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">host</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">host</span> <span class="o">||</span> <span class="s1">&#39;localhost&#39;</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">port</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">port</span> <span class="o">||</span> <span class="mi">6379</span><span class="p">;</span>
+  
+  <span class="k">this</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+<span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <h3>function connect (host, port)</h3>
+
+<h4>@host {string} <strong>Optional</strong> Host of the Redis server.</h4>
+
+<h4>@port {string} <strong>Optional</strong> Port of the Redis server.</h4>
+
+<p>Connects to the remote Redis server for this instance.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">WorkerCache</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">connect</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">host</span><span class="p">,</span> <span class="nx">port</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">host</span> <span class="o">=</span> <span class="nx">host</span> <span class="o">||</span> <span class="k">this</span><span class="p">.</span><span class="nx">host</span><span class="p">;</span>
+  <span class="nx">port</span> <span class="o">=</span> <span class="nx">port</span> <span class="o">||</span> <span class="k">this</span><span class="p">.</span><span class="nx">port</span><span class="p">;</span>
+  
+  <span class="k">this</span><span class="p">.</span><span class="nx">host</span> <span class="o">=</span> <span class="nx">host</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">port</span> <span class="o">=</span> <span class="nx">port</span><span class="p">;</span>
+  
+  <span class="k">this</span><span class="p">.</span><span class="nx">redis</span> <span class="o">=</span> <span class="nx">redis</span><span class="p">.</span><span class="nx">createClient</span><span class="p">(</span><span class="nx">port</span><span class="p">,</span> <span class="nx">host</span><span class="p">);</span>
+<span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <h3>function close ()</h3>
+
+<p>Closes the Redis connection associated with this instance.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">WorkerCache</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">close</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">redis</span><span class="p">.</span><span class="nx">quit</span><span class="p">();</span>
+<span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <h3>function load (callback)</h3>
+
+<h4>@callback {function} Continuation to pass control to when complete.</h4>
+
+<p>Loads all data from the remove Redis server for this instance.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">WorkerCache</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">load</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span> <span class="nx">jobs</span> <span class="o">=</span> <span class="p">{},</span> <span class="nx">workers</span> <span class="o">=</span> <span class="p">{};</span>
+  
+  <span class="kd">function</span> <span class="nx">getWorkers</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">self</span><span class="p">.</span><span class="nx">redis</span><span class="p">.</span><span class="nx">smembers</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">key</span><span class="p">(</span><span class="s1">&#39;workers&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="p">),</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">ids</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">function</span> <span class="nx">getWorker</span> <span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">redis</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">key</span><span class="p">(</span><span class="s1">&#39;workers&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">id</span><span class="p">),</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">worker</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">next</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+          <span class="p">}</span>
+          
+          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">workers</span><span class="p">[</span><span class="nx">name</span><span class="p">])</span> <span class="p">{</span>
+            <span class="nx">workers</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[];</span>
+          <span class="p">}</span>
+          
+          <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">worker</span><span class="p">);</span>
+          <span class="nx">result</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nx">id</span><span class="p">;</span>
+          <span class="nx">workers</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">push</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+          <span class="nx">next</span><span class="p">();</span>
+        <span class="p">});</span>
+      <span class="p">}</span>
+      
+      <span class="nx">async</span><span class="p">.</span><span class="nx">forEachSeries</span><span class="p">(</span><span class="nx">ids</span><span class="p">,</span> <span class="nx">getWorker</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">err</span> <span class="o">?</span> <span class="nx">next</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="o">:</span> <span class="nx">next</span><span class="p">();</span>
+      <span class="p">});</span>
+    <span class="p">});</span>
+  <span class="p">}</span>
+  
+  <span class="k">this</span><span class="p">.</span><span class="nx">redis</span><span class="p">.</span><span class="nx">smembers</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">key</span><span class="p">(</span><span class="s1">&#39;jobs&#39;</span><span class="p">),</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">names</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">async</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">names</span><span class="p">,</span> <span class="nx">getWorkers</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">err</span> <span class="o">?</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="o">:</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">workers</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">});</span>  
+  <span class="p">});</span>  
+<span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <h3>function add (name, workerId, args, callback)</h3>
+
+<h4>@name {string} Name of the job to add the worker to</h4>
+
+<h4>@workerId {string} Id of worker to add</h4>
+
+<h4>@args {Array} Arguments for the worker to add</h4>
+
+<h4>@callback {function} Continuation to pass control to when complete.</h4>
+
+<p>Adds a new worker with <code>workerId</code> and <code>args to the job with the specified</code>name`.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">WorkerCache</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">add</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">workerId</span><span class="p">,</span> <span class="nx">args</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">redis</span><span class="p">.</span><span class="nx">sadd</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">key</span><span class="p">(</span><span class="s1">&#39;jobs&#39;</span><span class="p">),</span> <span class="nx">name</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="p">}</span>
+    
+    <span class="nx">self</span><span class="p">.</span><span class="nx">redis</span><span class="p">.</span><span class="nx">sadd</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">key</span><span class="p">(</span><span class="s1">&#39;workers&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="p">),</span> <span class="nx">workerId</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+      <span class="p">}</span>
+
+      <span class="nx">self</span><span class="p">.</span><span class="nx">redis</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">key</span><span class="p">(</span><span class="s1">&#39;workers&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">workerId</span><span class="p">),</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">args</span><span class="p">),</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">});</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <h3>function get (name, workerId, callback)</h3>
+
+<h4>@name {string} Name of the job to get the worker for</h4>
+
+<h4>@workerId {string} Id of worker to get</h4>
+
+<h4>@callback {function} Continuation to pass control to when complete.</h4>
+
+<p>Gets the worker for the job with the specified <code>name</code> with <code>workerId</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">WorkerCache</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">get</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">workerId</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">redis</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">key</span><span class="p">(</span><span class="s1">&#39;workers&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">workerId</span><span class="p">),</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">worker</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">worker</span> <span class="o">?</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">worker</span><span class="p">)</span> <span class="o">:</span> <span class="nx">worker</span><span class="p">;</span>
+      <span class="k">return</span> <span class="nx">err</span> <span class="o">?</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="o">:</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">result</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">});</span>
+<span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <h3>function remove (name, workerId, callback)</h3>
+
+<h4>@name {string} Name of the job to remove the worker from</h4>
+
+<h4>@workerId {string} Id of worker to remove</h4>
+
+<h4>@callback {function} Continuation to pass control to when complete.</h4>
+
+<p>Removes the worker with the specified <code>workerId</code> from this instance 
+for the job with the specified <code>name</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">WorkerCache</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">remove</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">workerId</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">redis</span><span class="p">.</span><span class="nx">srem</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">key</span><span class="p">(</span><span class="s1">&#39;workers&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="p">),</span> <span class="nx">workerId</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="p">}</span>
+    
+    <span class="nx">self</span><span class="p">.</span><span class="nx">redis</span><span class="p">.</span><span class="nx">del</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">key</span><span class="p">(</span><span class="s1">&#39;workers&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">workerId</span><span class="p">),</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <h3>function removeAll (name, callback)</h3>
+
+<h4>@name {string} Name of the job to remove all workers for</h4>
+
+<h4>@callback {function} Continuation to pass control to when complete.</h4>
+
+<p>Removes all workers from this instance for the job with the specified <code>name</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">WorkerCache</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">removeAll</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">redis</span><span class="p">.</span><span class="nx">smembers</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">key</span><span class="p">(</span><span class="s1">&#39;workers&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="p">),</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">ids</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="p">}</span>
+    
+    <span class="kd">function</span> <span class="nx">remove</span> <span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">self</span><span class="p">.</span><span class="nx">remove</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">id</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
+    <span class="p">}</span>
+    
+    <span class="nx">async</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">ids</span><span class="p">,</span> <span class="nx">remove</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">err</span> <span class="o">?</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="o">:</span> <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <h3>function key (arguments)</h3>
+
+<p>Returns the cache key for the specified <code>arguments</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">WorkerCache</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">key</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">args</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);</span>
+  
+  <span class="nx">args</span><span class="p">.</span><span class="nx">unshift</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">namespace</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">args</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">);</span>
+<span class="p">};</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
