@@ -17,27 +17,34 @@ var sys = require('sys'),
     helpers = require('./helpers');
 
 vows.describe('neuron/job-manager/cache').addBatch({
-  "When working with pre-existing jobs in a JobCache": {
+  "When working with pre-existing jobs in a WorkerCache": {
     topic: function () {
-      var that = this, cache = new neuron.JobCache();
-      cache.addJob('test-job', {
-        dirname: __dirname,
-        work: helpers.listDir(100)
-      });
+      var that = this, results = [], cache = new neuron.WorkerCache();
       
       async.forEach([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], function (i, next) {
-        cache.addWorker('test-job', i, [['foo', 'bar', 'baz', 'buzz', i].join('/')], next);
+        cache.add('test-job', i, [['foo', 'bar', 'baz', 'buzz', i].join('/')], next);
       }, function () {
         var manager = new neuron.JobManager({
           cache: true
         });
         
-        manager.on('finished', that.callback);
+        manager.addJob('test-job', {
+          work: helpers.waitAndRespond(100)
+        });
+
+        manager.on('finish', function (job, worker) {
+          results.push(worker);
+          if (worker.id === '9') {
+            that.callback(null, results);
+          }
+        });
+        
         manager.load();
       });
     },
-    "should do stuff": function () {
-      require('eyes').inspect(arguments);
+    "should run the loaded jobs in the order specified": function (ign, results) {
+      assert.length(results, 10);
+      assert.equal(results[0].id, '0');
     }
   }
 }).export(module);

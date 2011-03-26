@@ -75,10 +75,10 @@ vows.describe('neuron/job-manager/simple').addBatch(
     }
   })
 ).addBatch(
-  createConcurrentBatch("and the remove() method is called", 'waitRespond', waitProps, {
+  createConcurrentBatch("and the removeWorker() method is called", 'waitRespond', waitProps, {
     topic: function (manager) {
       Object.keys(manager.jobs['waitRespond'].waiting).forEach(function (id) {
-        manager.remove('waitRespond', id);
+        manager.removeWorker('waitRespond', id);
       });
 
       return manager;
