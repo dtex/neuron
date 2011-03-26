@@ -14,7 +14,7 @@ var vows = require('vows'),
 
 var str, obj;
 
-vows.describe('vows/job-serializer').addBatch({
+vows.describe('neuron/job-serializer').addBatch({
   "When using neuron": {
     "the stringify() method": {
       "should correctly serialize an object with functions": function () {

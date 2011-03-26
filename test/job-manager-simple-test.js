@@ -1,5 +1,5 @@
 /*
- * neuron-test.js: Tests unit tests for neuron module
+ * job-manager-simple-test.js: Tests unit tests for neuron module
  *
  * (C) 2010 Charlie Robbins
  *
