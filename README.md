@@ -5,14 +5,14 @@ The simplest possible event driven job manager, FIFO queue, and "task based cach
 ## Installation
 
 ### Installing npm (node package manager)
-<pre>
+``` bash
   curl http://npmjs.org/install.sh | sh
-</pre>
+```
 
 ### Installing forever
-<pre>
-  [sudo] npm install neuron
-</pre>
+``` bash
+  $ [sudo] npm install neuron
+```
 
 ## Usage 
 Neuron is a simple job queue with support for granular concurrency and persistent worker storage. It a way to manage jobs as they are created and completed in an async, event-driven manner. Heuristics for parallelization, ordering, and pooling are simple right now and jobs are processed in a FIFO order. 
@@ -22,7 +22,7 @@ Managing jobs in neuron is easy. Neuron doesn't assume anything about the intern
 
 Here's a quick sample of managing a single job called `listDir` with neuron.
 
-<pre>
+``` js
   var util = require('util'),
       neuron = require('neuron');
       
@@ -45,13 +45,14 @@ Here's a quick sample of managing a single job called `listDir` with neuron.
       });
     }
   });
-</pre>
+```
 
 ### Working with and Finishing Job instances
 A JobManager will create a worker for the specified Job associated (i.e. add it to the job queue) each time the `enqueue()` method is called. All parameters passed to the enqueue method are passed on to the Job `work()` function. 
 
 A Job function is 'finished' when it sets `this.finished = true`. This raises an event which is handled by the manager and re-emitted for the programmer. So when a worker completes, the JobManager raises the `finish` event:
-<pre>
+
+``` js
   //
   // Start a worker and listen for finish
   //
@@ -67,12 +68,12 @@ A Job function is 'finished' when it sets `this.finished = true`. This raises an
   // are consumed by the work() function passed to the job.
   //
   manager.enqueue('listDir', '/');
-</pre>
+```
 
 ### Using the Persistent WorkerCache
 Neuron has a built-in WorkerCache that stores the ordering and arguments to your workers for single instance durability. You don't have to worry about all the cache consistency nonsense though, just include the `cache` property when creating a JobManager.
 
-<pre>
+``` js
   var manager = new neuron.JobManager({
     cache: {
       host: 'localhost',
@@ -89,11 +90,11 @@ Neuron has a built-in WorkerCache that stores the ordering and arguments to your
       }, 1000);
     }
   });
-</pre>
+```
 
 If there are any workers stored in your Redis server, you can load them by calling `manager.load()`. The manager will emit the `load` event when it is finished. Make sure that you have already added your jobs to your neuron JobManager before calling load or they will not be placed in the queue for that job.
 
-<pre>
+``` js
   manager.on('finish', function (job, worker) {
     //
     // Log the output from the delayed addition
@@ -106,6 +107,6 @@ If there are any workers stored in your Redis server, you can load them by calli
   })
   
   manager.load();
-</pre>
+```
 
 #### Author: [Charlie Robbins](http://nodejitsu.com)
