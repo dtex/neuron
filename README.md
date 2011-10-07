@@ -9,7 +9,7 @@ The simplest possible event driven job manager, FIFO queue, and "task based cach
   curl http://npmjs.org/install.sh | sh
 ```
 
-### Installing forever
+### Installing neuron
 ``` bash
   $ [sudo] npm install neuron
 ```
