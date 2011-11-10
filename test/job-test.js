@@ -5,14 +5,12 @@
  *
  */
 
-require.paths.unshift(require('path').join(__dirname, '..', 'lib'));
-  
 var sys = require('sys'),
     fs = require('fs'),
     path = require('path'),
     vows = require('vows'),
     assert = require('assert'),
-    neuron = require('neuron'),
+    neuron = require('../lib/neuron'),
     helpers = require('./helpers');
 
 vows.describe('neuron/job').addBatch({
@@ -59,3 +57,4 @@ vows.describe('neuron/job').addBatch({
     }
   }
 }).export(module);
+

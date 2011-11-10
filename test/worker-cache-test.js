@@ -5,11 +5,9 @@
  *
  */
 
-require.paths.unshift(require('path').join(__dirname, '..', 'lib'));
-  
 var vows = require('vows'),
     assert = require('assert'),
-    neuron = require('neuron'),
+    neuron = require('../lib/neuron'),
     helpers = require('./helpers');
 
 vows.describe('neuron/worker-cache').addBatch({
@@ -90,3 +88,4 @@ vows.describe('neuron/worker-cache').addBatch({
     }
   }
 }).export(module);
+

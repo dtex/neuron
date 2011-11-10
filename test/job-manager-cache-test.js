@@ -5,15 +5,13 @@
  *
  */
 
-require.paths.unshift(require('path').join(__dirname, '..', 'lib'));
-  
 var sys = require('sys'),
     fs = require('fs'),
     path = require('path'),
     vows = require('vows'),
     assert = require('assert'),
     async = require('async'),
-    neuron = require('neuron'),
+    neuron = require('../lib/neuron'),
     helpers = require('./helpers');
 
 vows.describe('neuron/job-manager/cache').addBatch({
