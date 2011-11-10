@@ -43,8 +43,9 @@ vows.describe('neuron/job-manager/cache').addBatch({
       });
     },
     "should run the loaded jobs in the order specified": function (ign, results) {
-      assert.length(results, 10);
+      assert.lengthOf(results, 10);
       assert.equal(results[0].id, '0');
     }
   }
 }).export(module);
+
