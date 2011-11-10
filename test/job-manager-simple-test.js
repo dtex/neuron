@@ -5,8 +5,7 @@
  *
  */
   
-var sys = require('sys'),
-    fs = require('fs'),
+var fs = require('fs'),
     path = require('path'),
     vows = require('vows'),
     assert = require('assert'),
