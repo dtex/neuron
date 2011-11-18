@@ -1,4 +1,4 @@
-# Neuron
+# Neuron [![Build Status](https://secure.travis-ci.org/flatiron/neuron.png)](http://travis-ci.org/flatiron/neuron)
 
 The simplest possible event driven job manager, FIFO queue, and "task based cache" in node.js
 
