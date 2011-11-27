@@ -15,10 +15,10 @@ The simplest possible event driven job manager, FIFO queue, and "task based cach
 ```
 
 ## Usage 
-Neuron is a simple job queue with support for granular concurrency and persistent worker storage. It a way to manage jobs as they are created and completed in an async, event-driven manner. Heuristics for parallelization, ordering, and pooling are simple right now and jobs are processed in a FIFO order. 
+Neuron is a simple job queue with support for granular concurrency and persistent worker storage. It provides a way to manage jobs as they are created and completed in an async, event-driven manner. Heuristics for parallelization, ordering, and pooling are simple right now and jobs are processed in a FIFO order. 
 
 ### Managing Jobs
-Managing jobs in neuron is easy. Neuron doesn't assume anything about the internal structure of the properties for each of your jobs except that they have a function called `work()`.
+Managing jobs in neuron is easy. Neuron doesn't assume anything about the internal structure of the properties for each of your jobs except that they have a function called `work()`. The `concurrency` property is also useful but optional. If it isn't specified, neuron defaults to running 50 concurrent jobs.
 
 Here's a quick sample of managing a single job called `listDir` with neuron.
 
@@ -32,6 +32,7 @@ Here's a quick sample of managing a single job called `listDir` with neuron.
   var manager = new neuron.JobManager();
   manager.addJob('listDir', {
     dirname: __dirname,
+    concurrency: 25,
     work: function (dirname) {
       var self = this;
       exec('ls -la ' + dirname || this.dirname, function (error, stdout, stderr) {
