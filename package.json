@@ -5,7 +5,7 @@
   "author": "Charlie Robbins <charlie.robbins@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "http://github.com/indexzero/neuron.git" 
+    "url": "http://github.com/flatiron/neuron.git" 
   },
   "keywords": ["job queue", "tools", "cache"],
   "dependencies": {
