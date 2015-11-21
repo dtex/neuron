@@ -4,11 +4,12 @@
   "version": "0.4.6",
   "author": "Nodejitsu Inc. <info@nodejitsu.com>",
   "maintainers": [
-    "indexzero <charlie@nodejitsu.com>"
+    "indexzero <charlie@nodejitsu.com>",
+    "dtex <donovan@donovan.bz>"
   ],
   "repository": {
     "type": "git",
-    "url": "http://github.com/flatiron/neuron.git"
+    "url": "http://github.com/dtex/neuron.git"
   },
   "keywords": [
     "job queue",
