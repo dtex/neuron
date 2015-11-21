@@ -21,7 +21,7 @@
     "redis": "0.7.x"
   },
   "devDependencies": {
-    "vows": "0.6.x"
+    "vows": "0.8.x"
   },
   "main": "./lib/neuron",
   "scripts": {
