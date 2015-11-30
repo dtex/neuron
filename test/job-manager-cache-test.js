@@ -21,6 +21,9 @@ vows.describe('neuron/job-manager/cache').addBatch({
       async.forEach([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], function (i, next) {
         cache.add('test-job', i, [['foo', 'bar', 'baz', 'buzz', i].join('/')], next);
       }, function () {
+
+        cache.close();
+
         var manager = new neuron.JobManager({
           cache: true
         });
@@ -32,14 +35,15 @@ vows.describe('neuron/job-manager/cache').addBatch({
         manager.on('finish', function (job, worker) {
           results.push(worker);
           if (worker.id === '9') {
-            that.callback(null, results);
+            that.callback(null, results, manager);
           }
         });
 
         manager.load();
       });
     },
-    "should run the loaded jobs in the order specified": function (ign, results) {
+    "should run the loaded jobs in the order specified": function (ign, results, manager) {
+      manager.cache.close();
       assert.lengthOf(results, 10);
       assert.equal(results[0].id, '0');
     }
