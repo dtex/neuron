@@ -4,14 +4,14 @@
  * (C) 2010 Charlie Robbins
  *
  */
-  
+
 var fs = require('fs'),
     path = require('path'),
     vows = require('vows'),
     assert = require('assert'),
     neuron = require('../lib/neuron'),
     helpers = require('./helpers');
-    
+
 var workerId;
 
 vows.describe('neuron/job-manager/simple').addBatch({
@@ -22,19 +22,19 @@ vows.describe('neuron/job-manager/simple').addBatch({
         dirname: __dirname,
         work: helpers.listDir(100)
       });
-      
+
       return manager;
     },
     "the enqueue() method": {
       topic: function (manager) {
         var that = this;
-        
+
         manager.once('start', function () {
           manager.once('finish', function (job, worker) {
             that.callback(null, worker, workerId)
           });
         });
-        
+
         workerId = manager.enqueue('listDir', path.join(__dirname, '..'));
       },
       "should start off a job that returns results": function (err, worker, workerId) {

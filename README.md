@@ -1,21 +1,9 @@
-# Neuron [![Build Status](https://secure.travis-ci.org/flatiron/neuron.png)](http://travis-ci.org/flatiron/neuron)
+# Neuron [![Build Status](https://secure.travis-ci.org/dtex/neuron.png)](http://travis-ci.org/dtex/neuron)
 
 The simplest possible event driven job manager, FIFO queue, and "task based cache" in node.js
 
-## Installation
-
-### Installing npm (node package manager)
-``` bash
-  curl http://npmjs.org/install.sh | sh
-```
-
-### Installing neuron
-``` bash
-  $ [sudo] npm install neuron
-```
-
-## Usage 
-Neuron is a simple job queue with support for granular concurrency and persistent worker storage. It provides a way to manage jobs as they are created and completed in an async, event-driven manner. Heuristics for parallelization, ordering, and pooling are simple right now and jobs are processed in a FIFO order. 
+## Usage
+Neuron is a simple job queue with support for granular concurrency and persistent worker storage. It provides a way to manage jobs as they are created and completed in an async, event-driven manner. Heuristics for parallelization, ordering, and pooling are simple right now and jobs are processed in a FIFO order.
 
 ### Managing Jobs
 Managing jobs in neuron is easy. Neuron doesn't assume anything about the internal structure of the properties for each of your jobs except that they have a function called `work()`. The `concurrency` property is also useful but optional. If it isn't specified, neuron defaults to running 50 concurrent jobs.
@@ -25,7 +13,7 @@ Here's a quick sample of managing a single job called `listDir` with neuron.
 ``` js
   var util = require('util'),
       neuron = require('neuron');
-      
+
   //
   // Create the manager and set the job.
   //
@@ -49,7 +37,7 @@ Here's a quick sample of managing a single job called `listDir` with neuron.
 ```
 
 ### Working with and Finishing Job instances
-A JobManager will create a worker for the specified Job associated (i.e. add it to the job queue) each time the `enqueue()` method is called. All parameters passed to the enqueue method are passed on to the Job `work()` function. 
+A JobManager will create a worker for the specified Job associated (i.e. add it to the job queue) each time the `enqueue()` method is called. All parameters passed to the enqueue method are passed on to the Job `work()` function.
 
 A Job function is 'finished' when it sets `this.finished = true`. This raises an event which is handled by the manager and re-emitted for the programmer. So when a worker completes, the JobManager raises the `finish` event:
 
@@ -63,7 +51,7 @@ A Job function is 'finished' when it sets `this.finished = true`. This raises an
     //
     console.dir(worker.stdout);
   });
-  
+
   //
   // All arguments passed to the enqueue() function after the job name
   // are consumed by the work() function passed to the job.
@@ -81,7 +69,7 @@ Neuron has a built-in WorkerCache that stores the ordering and arguments to your
       port: 6379
     }
   });
-  
+
   manager.addJob('delayAdd', {
     work: function (a, b, c) {
       var self = this;
@@ -106,8 +94,14 @@ If there are any workers stored in your Redis server, you can load them by calli
   manager.on('load', function () {
     console.log('This will be called before any `finish` events');
   })
-  
+
   manager.load();
 ```
 
-#### Author: [Charlie Robbins](http://nodejitsu.com)
+### Installing neuron
+``` bash
+  $ [sudo] npm install neuron --save
+```
+
+
+#### Authors: [Donovan Buck](https://github.com/dtex), [Charlie Robbins](https://github.com/indexzero)
