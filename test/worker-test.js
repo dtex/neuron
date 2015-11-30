@@ -11,7 +11,7 @@ var fs = require('fs'),
     assert = require('assert'),
     neuron = require('../lib/neuron'),
     helpers = require('./helpers');
-    
+
 var worker;
 
 vows.describe('neuron/worker').addBatch({
@@ -22,12 +22,12 @@ vows.describe('neuron/worker').addBatch({
         assert.throws(function () {
           var w = new neuron.Worker();
         });
-        
+
         // No job
         assert.throws(function () {
           var w = new neuron.Worker('someId');
         });
-        
+
         // Not an instance of neuron.Job
         assert.throws(function () {
           var w = new neuron.Worker('someId', function () { /* Purposefully Empty */ });
@@ -39,7 +39,7 @@ vows.describe('neuron/worker').addBatch({
         worker = new neuron.Worker('testId', new neuron.Job('empty', {
           work: function () { /* Purposefully empty */ }
         }));
-        
+
         worker.on('finish', this.callback);
         worker.finished = true;
       },

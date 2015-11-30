@@ -17,14 +17,14 @@ vows.describe('neuron/job-manager/cache').addBatch({
   "When working with pre-existing jobs in a WorkerCache": {
     topic: function () {
       var that = this, results = [], cache = new neuron.WorkerCache();
-      
+
       async.forEach([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], function (i, next) {
         cache.add('test-job', i, [['foo', 'bar', 'baz', 'buzz', i].join('/')], next);
       }, function () {
         var manager = new neuron.JobManager({
           cache: true
         });
-        
+
         manager.addJob('test-job', {
           work: helpers.waitAndRespond(100)
         });
@@ -35,7 +35,7 @@ vows.describe('neuron/job-manager/cache').addBatch({
             that.callback(null, results);
           }
         });
-        
+
         manager.load();
       });
     },

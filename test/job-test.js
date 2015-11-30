@@ -20,12 +20,12 @@ vows.describe('neuron/job').addBatch({
         assert.throws(function () {
           var j = new neuron.Job();
         });
-        
+
         // No work
         assert.throws(function () {
           var j = new neuron.Worker('someId');
         });
-        
+
         // Pass finished
         assert.throws(function () {
           var j = new neuron.Worker('someId', {
@@ -44,7 +44,7 @@ vows.describe('neuron/job').addBatch({
             aparam: 'value'
           }
         });
-        
+
         return job;
       },
       "should copy the properties to the instance": function (job) {

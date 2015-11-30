@@ -11,7 +11,7 @@ var fs = require('fs'),
     assert = require('assert'),
     neuron = require('../lib/neuron'),
     helpers = require('./helpers');
-    
+
 var workerIds = [];
 
 var listProps = {
@@ -39,7 +39,7 @@ function createConcurrentBatch (message, name, props, nestedTest) {
       }
     }
   };
-  
+
   var test, header = "when passed more jobs than the concurrency level allows";
   test = {
     topic: function (manager) {
@@ -50,9 +50,9 @@ function createConcurrentBatch (message, name, props, nestedTest) {
       return manager;
     }
   };
-  
+
   test[message] = nestedTest;
-  
+
   batch[Object.keys(batch)[0]][header] = test;
   return batch;
 }
